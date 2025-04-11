@@ -29,7 +29,19 @@
     </div>
 
     <script>
-        const correctCaptcha = "1234";
+        let currentCaptcha = '';
+        
+        // 生成随机字母
+        function generateRandomLetter() {
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            return letters.charAt(Math.floor(Math.random() * letters.length));
+        }
+
+        // 生成随机颜色
+        function getRandomColor() {
+            const colors = ['#4A90E2', '#50A14F', '#986801', '#A626A4', '#E45649'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
         
         function generateCaptcha() {
             const canvas = document.getElementById('captchaCanvas');
@@ -39,27 +51,47 @@
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // 设置文字样式
-            ctx.font = '24px Arial';
-            ctx.fillStyle = 'black';
+            // 生成4个随机字母
+            currentCaptcha = '';
+            for(let i = 0; i < 4; i++) {
+                currentCaptcha += generateRandomLetter();
+            }
             
-            // 绘制文字
-            ctx.textAlign = 'center';
+            // 设置文字基本样式
             ctx.textBaseline = 'middle';
-            ctx.fillText(correctCaptcha, canvas.width/2, canvas.height/2);
+            
+            // 绘制每个字母（使用不同的样式）
+            for(let i = 0; i < 4; i++) {
+                const x = 25 + i * 25; // 字母间隔
+                const y = 20 + (Math.random() * 6 - 3); // 轻微的垂直偏移
+                const rotate = (Math.random() * 30 - 15) * Math.PI / 180; // 随机旋转 -15 到 15 度
+                
+                ctx.save(); // 保存当前状态
+                ctx.translate(x, y);
+                ctx.rotate(rotate);
+                
+                // 随机字体大小
+                const fontSize = Math.floor(20 + Math.random() * 8);
+                ctx.font = `bold ${fontSize}px Arial`;
+                ctx.fillStyle = getRandomColor();
+                
+                ctx.fillText(currentCaptcha[i], 0, 0);
+                ctx.restore(); // 恢复到之前的状态
+            }
             
             // 添加干扰线
-            for(let i = 0; i < 5; i++) {
+            for(let i = 0; i < 3; i++) {
                 ctx.beginPath();
                 ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
                 ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
-                ctx.strokeStyle = '#999';
+                ctx.strokeStyle = getRandomColor();
+                ctx.lineWidth = 0.5;
                 ctx.stroke();
             }
             
             // 添加干扰点
             for(let i = 0; i < 30; i++) {
-                ctx.fillStyle = '#999';
+                ctx.fillStyle = getRandomColor();
                 ctx.beginPath();
                 ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, 1, 0, Math.PI * 2);
                 ctx.fill();
@@ -72,7 +104,8 @@
             const resultImage = document.getElementById('result-image');
             const captchaContainer = document.querySelector('.captcha-container');
 
-            if (input.value === correctCaptcha) {
+            // 验证码不区分大小写
+            if (input.value.toUpperCase() === currentCaptcha) {
                 errorMessage.style.display = 'none';
                 captchaContainer.style.display = 'none';
                 resultImage.style.display = 'block';
